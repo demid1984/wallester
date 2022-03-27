@@ -6,6 +6,16 @@ import (
 	"os"
 )
 
+type CustomerId struct {
+	Id uint64
+}
+
+func handleError(err interface{}) {
+	if err != nil {
+		panic(err)
+	}
+}
+
 func mainHandler() {
 	mainTemplate := template.Must(template.ParseFiles("static/main.html"))
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -38,8 +48,12 @@ func addHandler() {
 	customerTemplate := template.Must(template.ParseFiles("static/add.html"))
 	http.HandleFunc("/add", func(w http.ResponseWriter, r *http.Request) {
 		var service HttpCustomerService
-		service.Add(r)
-		customerError := customerTemplate.Execute(w, nil)
+		id, err := service.Add(r)
+		var data CustomerId
+		if err == nil {
+			data = CustomerId{id}
+		}
+		customerError := customerTemplate.Execute(w, data)
 		handleError(customerError)
 	})
 }

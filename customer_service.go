@@ -6,12 +6,6 @@ const (
 	BirthdayFormat = "02.01.2006"
 )
 
-func handleError(err interface{}) {
-	if err != nil {
-		panic(err)
-	}
-}
-
 type CustomerDto struct {
 	Id        uint64
 	FirstName string
@@ -44,11 +38,11 @@ type CustomersData struct {
 }
 
 type CustomerService struct {
+	dao ICustomerDao
 }
 
 func (s CustomerService) List() CustomersData {
-	var dao CustomerDao
-	entities := dao.list()
+	entities := s.dao.list()
 	customers := make([]CustomerDto, len(entities))
 	for i := range entities {
 		customers[i] = convertEntityToDto(entities[i])
@@ -57,8 +51,7 @@ func (s CustomerService) List() CustomersData {
 }
 
 func (s CustomerService) Search(firstName, lastName string) CustomersData {
-	var dao CustomerDao
-	entities := dao.search(firstName, lastName)
+	entities := s.dao.search(firstName, lastName)
 	customers := make([]CustomerDto, len(entities))
 	for i := range entities {
 		customers[i] = convertEntityToDto(entities[i])
@@ -66,11 +59,11 @@ func (s CustomerService) Search(firstName, lastName string) CustomersData {
 	return CustomersData{"", customers}
 }
 
-func (s CustomerService) Add(customer CustomerDto) {
-	var dao CustomerDao
-
+func (s CustomerService) Add(customer CustomerDto) (uint64, error) {
 	birthday, err := time.Parse(BirthdayFormat, customer.Birthday)
-	handleError(err)
+	if err != nil {
+		return 0, err
+	}
 	var entity Customer = Customer{
 		0,
 		customer.FirstName,
@@ -80,14 +73,18 @@ func (s CustomerService) Add(customer CustomerDto) {
 		customer.Email,
 		customer.Address,
 		0}
-	dao.create(&entity)
+	id, err := s.dao.create(entity)
+	if err != nil {
+		return 0, err
+	}
+	return id, nil
 }
 
 func (s CustomerService) Update(customer CustomerDto) error {
-	var dao CustomerDao
-
 	birthday, err := time.Parse(BirthdayFormat, customer.Birthday)
-	handleError(err)
+	if err != nil {
+		return err
+	}
 	var entity Customer = Customer{
 		customer.Id,
 		customer.FirstName,
@@ -97,11 +94,13 @@ func (s CustomerService) Update(customer CustomerDto) error {
 		customer.Email,
 		customer.Address,
 		customer.Version}
-	return dao.update(entity)
+	return s.dao.update(entity)
 }
 
-func (s CustomerService) Get(id uint64) CustomerDto {
-	var dao CustomerDao
-	entity := dao.get(id)
-	return convertEntityToDto(entity)
+func (s CustomerService) Get(id uint64) (CustomerDto, error) {
+	entity, err := s.dao.get(id)
+	if err != nil {
+		return CustomerDto{}, err
+	}
+	return convertEntityToDto(entity), nil
 }

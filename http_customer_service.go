@@ -24,13 +24,14 @@ func convertRequestToDto(r *http.Request) CustomerDto {
 type HttpCustomerService struct {
 }
 
-func (s HttpCustomerService) Add(r *http.Request) {
+func (s HttpCustomerService) Add(r *http.Request) (uint64, error) {
 	if r.Method == "POST" {
 		err := r.ParseForm()
 		handleError(err)
 		var customerService CustomerService
-		customerService.Add(convertRequestToDto(r))
+		return customerService.Add(convertRequestToDto(r))
 	}
+	return 0, nil
 }
 
 func (s HttpCustomerService) Update(r *http.Request) CustomerDto {
@@ -38,18 +39,20 @@ func (s HttpCustomerService) Update(r *http.Request) CustomerDto {
 
 	var customer CustomerDto
 	if err == nil {
-		var updateErr error
+		var serviceErr error
 		var customerService CustomerService
 		if r.Method == "POST" {
-			err := r.ParseForm()
-			handleError(err)
+			parseFormErr := r.ParseForm()
+			if parseFormErr != nil {
+				customer.Error = parseFormErr.Error()
+			}
 			customerDto := convertRequestToDto(r)
 			customerDto.Id = uint64(id)
-			updateErr = customerService.Update(customerDto)
+			serviceErr = customerService.Update(customerDto)
 		}
-		customer = customerService.Get(uint64(id))
-		if updateErr != nil {
-			customer.Error = updateErr.Error()
+		customer, serviceErr = customerService.Get(uint64(id))
+		if serviceErr != nil {
+			customer.Error = serviceErr.Error()
 		}
 	}
 	return customer
