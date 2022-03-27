@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Customers</title>
+</head>
+<body>
+    {{if .Customers}}
+    <h1>Customers' List</h1>
+    <input type="button" onclick="location.href='/';" value="Home">
+    <table>
+        <tr>
+            <td style="width: 150px">First Name</td>
+            <td style="width: 150px">Last Name</td>
+            <td style="width: 150px">Birthday</td>
+            <td style="width: 100px">Gender</td>
+            <td style="width: 200px">Email</td>
+            <td style="width: 350px">Address</td>
+            <td style="width: 100px"></td>
+        </tr>
+        {{range .Customers}}
+        <tr>
+            <td>{{.FirstName}}</td>
+            <td>{{.LastName}}</td>
+            <td>{{.Birthday}}</td>
+            <td>{{.Gender}}</td>
+            <td>{{.Email}}</td>
+            <td>{{.Address}}</td>
+            <td><input type="button" onclick="location.href='/edit?id={{.Id}}'" value="Edit" /></td>
+        </tr>
+        {{end}}
+    </table>
+    {{else}}
+    <h1>There are no customers by request</h1>
+    <input type="button" onclick="location.href='/';" value="Home">
+    {{end}}
+</body>
+</html>

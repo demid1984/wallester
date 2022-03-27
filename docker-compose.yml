@@ -1,0 +1,15 @@
+version: '2.4'
+services:
+    wallester:
+        build:
+            context: env
+            dockerfile: Dockerfile
+        restart: always
+        container_name: wallester
+        hostname: wallester
+        ports:
+            - "127.0.0.1:9444:5432"
+        environment:
+            POSTGRES_USER: wallester
+            POSTGRES_PASSWORD: password
+            POSTGRES_DB: test
