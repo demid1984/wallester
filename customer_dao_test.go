@@ -104,13 +104,13 @@ func TestWithPostgreSql(t *testing.T) {
 	checkCustomer(t, customers[2])
 
 	customer := customers[2]
-	searchResult, _ := daoService.search(customer.firstName, customer.lastName)
+	searchResult, _ := daoService.search(customer.firstName, customer.lastName, Sort.Unordered)
 	if len(searchResult) != 1 {
 		t.Error("Cannot search customer by first name and last name")
 	}
 	checkCustomer(t, searchResult[0])
 
-	searchResult, _ = daoService.search("111", "222")
+	searchResult, _ = daoService.search("111", "222", Sort.Unordered)
 	if len(searchResult) != 0 {
 		t.Error("Search customer does not work correctly")
 	}

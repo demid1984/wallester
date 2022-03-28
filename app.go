@@ -24,13 +24,18 @@ func listHandler() {
 	customerTemplate := template.Must(template.ParseFiles("static/customers.html"))
 	http.HandleFunc("/list", func(w http.ResponseWriter, r *http.Request) {
 		var service HttpCustomerService
-		data, err := service.Search(r)
+		requestParam, data, sortable, err := service.Search(r)
 		var errorMessage string
 		if err != nil {
 			errorMessage = err.Error()
 		}
 		var result = map[string]interface{}{
-			"ErrMessage": errorMessage, "Customers": data,
+			"ErrMessage": errorMessage,
+			"Customers":  data,
+			"Sortable":   sortable,
+			"Sort":       r.URL.Query().Get("sort"),
+			"Request":    requestParam,
+			"SortTypes":  Sort,
 		}
 		customerError := customerTemplate.Execute(w, result)
 		handleError(customerError)

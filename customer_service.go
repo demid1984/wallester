@@ -56,8 +56,8 @@ func (s *CustomerService) List() ([]CustomerDto, error) {
 	return customers, nil
 }
 
-func (s *CustomerService) Search(firstName, lastName string) ([]CustomerDto, error) {
-	entities, err := s.dao().search(firstName, lastName)
+func (s *CustomerService) Search(firstName, lastName string, sort SortType) ([]CustomerDto, error) {
+	entities, err := s.dao().search(firstName, lastName, sort)
 	if err != nil {
 		return []CustomerDto{}, err
 	}

@@ -57,12 +57,16 @@ func (s *HttpCustomerService) Update(r *http.Request) CustomerDto {
 	return customer
 }
 
-func (s *HttpCustomerService) Search(r *http.Request) ([]CustomerDto, error) {
+func (s *HttpCustomerService) Search(r *http.Request) (map[string]string, []CustomerDto, bool, error) {
 	firstName := r.URL.Query().Get("firstName")
 	lastName := r.URL.Query().Get("lastName")
 	if len(firstName) > 0 && len(lastName) > 0 {
-		return s.customerService.Search(firstName, lastName)
+		request := map[string]string{"FirstName": firstName, "LastName": lastName}
+		sortType := FindSortByCode(r.URL.Query().Get("sort"))
+		data, err := s.customerService.Search(firstName, lastName, sortType)
+		return request, data, true, err
 	} else {
-		return s.customerService.List()
+		data, err := s.customerService.List()
+		return map[string]string{}, data, false, err
 	}
 }

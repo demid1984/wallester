@@ -8,6 +8,23 @@
 <input type="button" onclick="location.href='/';" value="Home">
 {{if .Customers}}
 <h1>Customers' List</h1>
+{{if .Sortable}}
+<form method="get">
+    <input type="hidden" name="firstName" value="{{.Request.FirstName}}">
+    <input type="hidden" name="lastName" value="{{.Request.LastName}}">
+    <label for="sort">Sort Field</label>
+    <select id="sort" name="sort">
+        <option value="{{.SortTypes.Unordered.Code}}" {{if eq $.Sort $.SortTypes.Unordered.Code}} selected {{end}}>Unordered</option>
+        <option value="{{.SortTypes.FirstName.Code}}" {{if eq $.Sort $.SortTypes.FirstName.Code}} selected {{end}}>First Name</option>
+        <option value="{{.SortTypes.LastName.Code}}" {{if eq $.Sort $.SortTypes.LastName.Code}} selected {{end}}>Last Name</option>
+        <option value="{{.SortTypes.Birthday.Code}}" {{if eq $.Sort $.SortTypes.Birthday.Code}} selected {{end}}>Birthday</option>
+        <option value="{{.SortTypes.Gender.Code}}" {{if eq $.Sort $.SortTypes.Gender.Code}} selected {{end}}>Gender</option>
+        <option value="{{.SortTypes.Email.Code}}" {{if eq $.Sort $.SortTypes.Email.Code}} selected {{end}}>Email</option>
+        <option value="{{.SortTypes.Address.Code}}" {{if eq $.Sort $.SortTypes.Address.Code}} selected {{end}}>Address</option>
+    </select>
+    <input type="submit" value="Sort">
+</form>
+{{end}}
 <table>
     <tr>
         <td style="width: 150px">First Name</td>

@@ -13,7 +13,7 @@ type ICustomerDao interface {
 	create(customer Customer) (uint64, error)
 	update(customer Customer) error
 	get(id uint64) (Customer, error)
-	search(firstName, lastName string) ([]Customer, error)
+	search(firstName, lastName string, sort SortType) ([]Customer, error)
 	list() ([]Customer, error)
 }
 
@@ -134,10 +134,10 @@ func (d CustomerDao) get(id uint64) (Customer, error) {
 	return customer, nil
 }
 
-func (d CustomerDao) search(firstName, lastName string) ([]Customer, error) {
+func (d CustomerDao) search(firstName, lastName string, sort SortType) ([]Customer, error) {
 	connection := open()
 	rows, err := connection.Query("SELECT id, first_name, last_name, birthdate, gender, email, address, version "+
-		"FROM customers WHERE first_name=$1 AND last_name=$2 ORDER BY id", firstName, lastName)
+		"FROM customers WHERE first_name=$1 AND last_name=$2 ORDER BY "+sort.field, firstName, lastName)
 	if err != nil {
 		return []Customer{}, err
 	}
@@ -159,7 +159,8 @@ func (d CustomerDao) search(firstName, lastName string) ([]Customer, error) {
 
 func (d CustomerDao) list() ([]Customer, error) {
 	connection := open()
-	rows, err := connection.Query("SELECT id, first_name, last_name, birthdate, gender, email, address, version FROM customers ORDER BY id")
+	rows, err := connection.Query("SELECT id, first_name, last_name, birthdate, gender, email, address, version " +
+		"FROM customers ORDER BY id")
 	if err != nil {
 		return []Customer{}, err
 	}

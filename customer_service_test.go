@@ -102,7 +102,7 @@ func (d *StubDao) get(id uint64) (Customer, error) {
 	}, d.err
 }
 
-func (d *StubDao) search(firstName, lastName string) ([]Customer, error) {
+func (d *StubDao) search(firstName, lastName string, sort SortType) ([]Customer, error) {
 	birthday, _ := time.Parse(BirthdayFormat, Birthday)
 	if firstName != FirstName {
 		d.t.Error("Incorrect first name")
@@ -237,7 +237,7 @@ func TestCustomerService_Get(t *testing.T) {
 
 func TestCustomerService_Search(t *testing.T) {
 	stubDao.t = t
-	customers, err := victim.Search(FirstName, LastName)
+	customers, err := victim.Search(FirstName, LastName, Sort.Unordered)
 	if err != nil {
 		t.Error("Incorrect search request")
 	}
