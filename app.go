@@ -6,10 +6,6 @@ import (
 	"os"
 )
 
-type CustomerId struct {
-	Id uint64
-}
-
 func handleError(err interface{}) {
 	if err != nil {
 		panic(err)
@@ -28,8 +24,15 @@ func listHandler() {
 	customerTemplate := template.Must(template.ParseFiles("static/customers.html"))
 	http.HandleFunc("/list", func(w http.ResponseWriter, r *http.Request) {
 		var service HttpCustomerService
-		data := service.Search(r)
-		customerError := customerTemplate.Execute(w, data)
+		data, err := service.Search(r)
+		var errorMessage string
+		if err != nil {
+			errorMessage = err.Error()
+		}
+		var result = map[string]interface{}{
+			"ErrMessage": errorMessage, "Customers": data,
+		}
+		customerError := customerTemplate.Execute(w, result)
 		handleError(customerError)
 	})
 }
@@ -49,9 +52,9 @@ func addHandler() {
 	http.HandleFunc("/add", func(w http.ResponseWriter, r *http.Request) {
 		var service HttpCustomerService
 		id, err := service.Add(r)
-		var data CustomerId
+		var data = map[string]uint64{"Id": 0}
 		if err == nil {
-			data = CustomerId{id}
+			data["Id"] = id
 		}
 		customerError := customerTemplate.Execute(w, data)
 		handleError(customerError)

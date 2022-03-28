@@ -92,7 +92,10 @@ func TestWithPostgreSql(t *testing.T) {
 	}
 
 	var daoService CustomerDao
-	customers := daoService.list()
+	customers, listErr := daoService.list()
+	if listErr != nil {
+		t.Error("Error during list customers: " + listErr.Error())
+	}
 	if len(customers) != 3 {
 		t.Error("Cannot load predefined customers from database")
 	}
@@ -101,13 +104,13 @@ func TestWithPostgreSql(t *testing.T) {
 	checkCustomer(t, customers[2])
 
 	customer := customers[2]
-	searchResult := daoService.search(customer.firstName, customer.lastName)
+	searchResult, _ := daoService.search(customer.firstName, customer.lastName)
 	if len(searchResult) != 1 {
 		t.Error("Cannot search customer by first name and last name")
 	}
 	checkCustomer(t, searchResult[0])
 
-	searchResult = daoService.search("111", "222")
+	searchResult, _ = daoService.search("111", "222")
 	if len(searchResult) != 0 {
 		t.Error("Search customer does not work correctly")
 	}

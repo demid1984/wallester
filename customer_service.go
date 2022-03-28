@@ -32,34 +32,43 @@ func convertEntityToDto(entity Customer) CustomerDto {
 	}
 }
 
-type CustomersData struct {
-	errMessage string
-	Customers  []CustomerDto
-}
-
 type CustomerService struct {
-	dao ICustomerDao
+	daoVal ICustomerDao
 }
 
-func (s CustomerService) List() CustomersData {
-	entities := s.dao.list()
+func (s *CustomerService) dao() ICustomerDao {
+	if s.daoVal == nil {
+		return CustomerDao{}
+	} else {
+		return s.daoVal
+	}
+}
+
+func (s *CustomerService) List() ([]CustomerDto, error) {
+	entities, err := s.dao().list()
+	if err != nil {
+		return []CustomerDto{}, err
+	}
 	customers := make([]CustomerDto, len(entities))
 	for i := range entities {
 		customers[i] = convertEntityToDto(entities[i])
 	}
-	return CustomersData{"", customers}
+	return customers, nil
 }
 
-func (s CustomerService) Search(firstName, lastName string) CustomersData {
-	entities := s.dao.search(firstName, lastName)
+func (s *CustomerService) Search(firstName, lastName string) ([]CustomerDto, error) {
+	entities, err := s.dao().search(firstName, lastName)
+	if err != nil {
+		return []CustomerDto{}, err
+	}
 	customers := make([]CustomerDto, len(entities))
 	for i := range entities {
 		customers[i] = convertEntityToDto(entities[i])
 	}
-	return CustomersData{"", customers}
+	return customers, nil
 }
 
-func (s CustomerService) Add(customer CustomerDto) (uint64, error) {
+func (s *CustomerService) Add(customer CustomerDto) (uint64, error) {
 	birthday, err := time.Parse(BirthdayFormat, customer.Birthday)
 	if err != nil {
 		return 0, err
@@ -73,14 +82,14 @@ func (s CustomerService) Add(customer CustomerDto) (uint64, error) {
 		customer.Email,
 		customer.Address,
 		0}
-	id, err := s.dao.create(entity)
+	id, err := s.dao().create(entity)
 	if err != nil {
 		return 0, err
 	}
 	return id, nil
 }
 
-func (s CustomerService) Update(customer CustomerDto) error {
+func (s *CustomerService) Update(customer CustomerDto) error {
 	birthday, err := time.Parse(BirthdayFormat, customer.Birthday)
 	if err != nil {
 		return err
@@ -94,11 +103,11 @@ func (s CustomerService) Update(customer CustomerDto) error {
 		customer.Email,
 		customer.Address,
 		customer.Version}
-	return s.dao.update(entity)
+	return s.dao().update(entity)
 }
 
-func (s CustomerService) Get(id uint64) (CustomerDto, error) {
-	entity, err := s.dao.get(id)
+func (s *CustomerService) Get(id uint64) (CustomerDto, error) {
+	entity, err := s.dao().get(id)
 	if err != nil {
 		return CustomerDto{}, err
 	}

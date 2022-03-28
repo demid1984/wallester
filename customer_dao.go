@@ -13,8 +13,8 @@ type ICustomerDao interface {
 	create(customer Customer) (uint64, error)
 	update(customer Customer) error
 	get(id uint64) (Customer, error)
-	search(firstName, lastName string) []Customer
-	list() []Customer
+	search(firstName, lastName string) ([]Customer, error)
+	list() ([]Customer, error)
 }
 
 type CustomerDao struct {
@@ -134,12 +134,12 @@ func (d CustomerDao) get(id uint64) (Customer, error) {
 	return customer, nil
 }
 
-func (d CustomerDao) search(firstName, lastName string) []Customer {
+func (d CustomerDao) search(firstName, lastName string) ([]Customer, error) {
 	connection := open()
 	rows, err := connection.Query("SELECT id, first_name, last_name, birthdate, gender, email, address, version "+
 		"FROM customers WHERE first_name=$1 AND last_name=$2 ORDER BY id", firstName, lastName)
 	if err != nil {
-		panic(err)
+		return []Customer{}, err
 	}
 	defer connection.Close()
 	defer rows.Close()
@@ -150,18 +150,18 @@ func (d CustomerDao) search(firstName, lastName string) []Customer {
 			&customer.id, &customer.firstName, &customer.lastName, &customer.birthday, &customer.gender,
 			&customer.email, &customer.address, &customer.version)
 		if err != nil && err.Error() != "sql: no rows in result set" {
-			panic(err)
+			return []Customer{}, err
 		}
 		customers = append(customers, customer)
 	}
-	return customers
+	return customers, nil
 }
 
-func (d CustomerDao) list() []Customer {
+func (d CustomerDao) list() ([]Customer, error) {
 	connection := open()
 	rows, err := connection.Query("SELECT id, first_name, last_name, birthdate, gender, email, address, version FROM customers ORDER BY id")
 	if err != nil {
-		panic(err)
+		return []Customer{}, err
 	}
 	defer connection.Close()
 	defer rows.Close()
@@ -172,9 +172,9 @@ func (d CustomerDao) list() []Customer {
 			&customer.id, &customer.firstName, &customer.lastName, &customer.birthday, &customer.gender,
 			&customer.email, &customer.address, &customer.version)
 		if err != nil && err.Error() != "sql: no rows in result set" {
-			panic(err)
+			return []Customer{}, err
 		}
 		customers = append(customers, customer)
 	}
-	return customers
+	return customers, nil
 }

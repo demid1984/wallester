@@ -22,25 +22,24 @@ func convertRequestToDto(r *http.Request) CustomerDto {
 }
 
 type HttpCustomerService struct {
+	customerService CustomerService
 }
 
-func (s HttpCustomerService) Add(r *http.Request) (uint64, error) {
+func (s *HttpCustomerService) Add(r *http.Request) (uint64, error) {
 	if r.Method == "POST" {
 		err := r.ParseForm()
 		handleError(err)
-		var customerService CustomerService
-		return customerService.Add(convertRequestToDto(r))
+		return s.customerService.Add(convertRequestToDto(r))
 	}
 	return 0, nil
 }
 
-func (s HttpCustomerService) Update(r *http.Request) CustomerDto {
+func (s *HttpCustomerService) Update(r *http.Request) CustomerDto {
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 
 	var customer CustomerDto
 	if err == nil {
 		var serviceErr error
-		var customerService CustomerService
 		if r.Method == "POST" {
 			parseFormErr := r.ParseForm()
 			if parseFormErr != nil {
@@ -48,9 +47,9 @@ func (s HttpCustomerService) Update(r *http.Request) CustomerDto {
 			}
 			customerDto := convertRequestToDto(r)
 			customerDto.Id = uint64(id)
-			serviceErr = customerService.Update(customerDto)
+			serviceErr = s.customerService.Update(customerDto)
 		}
-		customer, serviceErr = customerService.Get(uint64(id))
+		customer, serviceErr = s.customerService.Get(uint64(id))
 		if serviceErr != nil {
 			customer.Error = serviceErr.Error()
 		}
@@ -58,16 +57,12 @@ func (s HttpCustomerService) Update(r *http.Request) CustomerDto {
 	return customer
 }
 
-func (s HttpCustomerService) Search(r *http.Request) CustomersData {
+func (s *HttpCustomerService) Search(r *http.Request) ([]CustomerDto, error) {
 	firstName := r.URL.Query().Get("firstName")
 	lastName := r.URL.Query().Get("lastName")
-
-	var customerService CustomerService
-	var data CustomersData
 	if len(firstName) > 0 && len(lastName) > 0 {
-		data = customerService.Search(firstName, lastName)
+		return s.customerService.Search(firstName, lastName)
 	} else {
-		data = customerService.List()
+		return s.customerService.List()
 	}
-	return data
 }

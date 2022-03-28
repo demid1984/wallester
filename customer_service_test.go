@@ -102,7 +102,7 @@ func (d *StubDao) get(id uint64) (Customer, error) {
 	}, d.err
 }
 
-func (d *StubDao) search(firstName, lastName string) []Customer {
+func (d *StubDao) search(firstName, lastName string) ([]Customer, error) {
 	birthday, _ := time.Parse(BirthdayFormat, Birthday)
 	if firstName != FirstName {
 		d.t.Error("Incorrect first name")
@@ -119,10 +119,10 @@ func (d *StubDao) search(firstName, lastName string) []Customer {
 		Email,
 		Address,
 		Version,
-	}}
+	}}, nil
 }
 
-func (d *StubDao) list() []Customer {
+func (d *StubDao) list() ([]Customer, error) {
 	birthday, _ := time.Parse(BirthdayFormat, Birthday)
 	return []Customer{Customer{
 		Id,
@@ -133,14 +133,14 @@ func (d *StubDao) list() []Customer {
 		Email,
 		Address,
 		Version,
-	}}
+	}}, nil
 }
 
 var victim CustomerService
 var stubDao = StubDao{}
 
 func init() {
-	victim.dao = &stubDao
+	victim.daoVal = &stubDao
 }
 
 func checkCustomerDto(customerDto CustomerDto, t *testing.T) {
@@ -237,26 +237,26 @@ func TestCustomerService_Get(t *testing.T) {
 
 func TestCustomerService_Search(t *testing.T) {
 	stubDao.t = t
-	customerData := victim.Search(FirstName, LastName)
-	if customerData.errMessage != "" {
+	customers, err := victim.Search(FirstName, LastName)
+	if err != nil {
 		t.Error("Incorrect search request")
 	}
-	if len(customerData.Customers) != 1 {
+	if len(customers) != 1 {
 		t.Error("Incorrect customers list")
 	}
 
-	checkCustomerDto(customerData.Customers[0], t)
+	checkCustomerDto(customers[0], t)
 }
 
 func TestCustomerService_List(t *testing.T) {
 	stubDao.t = t
-	customerData := victim.List()
-	if customerData.errMessage != "" {
+	customers, err := victim.List()
+	if err != nil {
 		t.Error("Incorrect search request")
 	}
-	if len(customerData.Customers) != 1 {
+	if len(customers) != 1 {
 		t.Error("Incorrect customers list")
 	}
 
-	checkCustomerDto(customerData.Customers[0], t)
+	checkCustomerDto(customers[0], t)
 }

@@ -5,12 +5,12 @@
     <title>Edit Customer</title>
 </head>
 <body>
+<input type="button" onclick="location.href='/';" value="Home">
 {{if .Id}}
 <h1>Customer Edit Form</h1>
 {{if .Error}}
 <h2>Server message: {{.Error}}</h2>
 {{end}}
-<input type="button" onclick="location.href='/';" value="Home">
 <form action="" method="post">
     <input type="hidden" name="version" value="{{.Version}}">
     <table style="width: 500px">
