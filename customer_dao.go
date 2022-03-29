@@ -67,6 +67,10 @@ func open() *sql.DB {
 	return db
 }
 
+func isNoRecordsError(err error) bool {
+	return err != nil && err.Error() == "sql: no rows in result set"
+}
+
 func (d CustomerDao) create(customer Customer) (uint64, error) {
 	connection := open()
 	var id uint64
@@ -89,12 +93,12 @@ func (d CustomerDao) update(customer Customer) error {
 	connection := open()
 	tx, txErr := connection.Begin()
 	if txErr != nil {
-		panic(txErr)
+		return txErr
 	}
 	var version uint64
 	versionErr := tx.QueryRow("SELECT version FROM customers WHERE id=$1 FOR UPDATE", customer.id).Scan(&version)
 	if versionErr != nil {
-		if versionErr.Error() == "sql: no rows in result set" {
+		if isNoRecordsError(versionErr) {
 			return errors.New("Cannot find customer by id")
 		} else {
 			return versionErr
@@ -128,7 +132,7 @@ func (d CustomerDao) get(id uint64) (Customer, error) {
 	var customer Customer
 	err := row.Scan(&customer.id, &customer.firstName, &customer.lastName, &customer.birthday, &customer.gender,
 		&customer.email, &customer.address, &customer.version)
-	if err != nil && err.Error() != "sql: no rows in result set" {
+	if err != nil && !isNoRecordsError(err) {
 		return Customer{}, err
 	}
 	return customer, nil
@@ -149,7 +153,7 @@ func (d CustomerDao) search(firstName, lastName string, sort SortType) ([]Custom
 		err := rows.Scan(
 			&customer.id, &customer.firstName, &customer.lastName, &customer.birthday, &customer.gender,
 			&customer.email, &customer.address, &customer.version)
-		if err != nil && err.Error() != "sql: no rows in result set" {
+		if err != nil {
 			return []Customer{}, err
 		}
 		customers = append(customers, customer)
@@ -172,7 +176,7 @@ func (d CustomerDao) list() ([]Customer, error) {
 		err := rows.Scan(
 			&customer.id, &customer.firstName, &customer.lastName, &customer.birthday, &customer.gender,
 			&customer.email, &customer.address, &customer.version)
-		if err != nil && err.Error() != "sql: no rows in result set" {
+		if err != nil {
 			return []Customer{}, err
 		}
 		customers = append(customers, customer)

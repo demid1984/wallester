@@ -73,7 +73,7 @@ func (s *CustomerService) Add(customer CustomerDto) (uint64, error) {
 	if err != nil {
 		return 0, err
 	}
-	var entity Customer = Customer{
+	var entity = Customer{
 		0,
 		customer.FirstName,
 		customer.LastName,

@@ -90,8 +90,8 @@ func TestWithPostgreSql(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-
 	var daoService CustomerDao
+
 	customers, listErr := daoService.list()
 	if listErr != nil {
 		t.Error("Error during list customers: " + listErr.Error())
@@ -110,7 +110,10 @@ func TestWithPostgreSql(t *testing.T) {
 	}
 	checkCustomer(t, searchResult[0])
 
-	searchResult, _ = daoService.search("111", "222", Sort.Unordered)
+	searchResult, err = daoService.search("111", "222", Sort.Unordered)
+	if err != nil {
+		t.Error("Search customer error: " + err.Error())
+	}
 	if len(searchResult) != 0 {
 		t.Error("Search customer does not work correctly")
 	}
